@@ -56,7 +56,8 @@ def load_tables(_engine):
     for t in ["students", "departments", "subjects", "teachers", "marks", "attendance", "feedback"]:
         try:
             tables[t] = pd.read_sql(f"SELECT * FROM {t}", _engine)
-        except Exception:
+        except Exception as exc:
+            st.warning(f"Could not load table '{t}': {exc}")
             tables[t] = pd.DataFrame()
     return tables
 
@@ -108,6 +109,7 @@ def build_student_summary(tables: dict) -> pd.DataFrame:
         dcols = [c for c in ["department_id", "department_name"] if c in departments.columns]
         summary = summary.merge(departments[dcols], on="department_id", how="left")
 
+    summary["incomplete"] = summary["avg_marks_pct"].isna() | summary["attendance_pct"].isna()
     summary["at_risk"] = (summary["avg_marks_pct"] < PASS_MARK) | (summary["attendance_pct"] < LOW_ATTENDANCE)
     return summary
 
@@ -164,8 +166,11 @@ def render_student_view(student_summary: pd.DataFrame, marks: pd.DataFrame, subj
         student_summary.get("department_name") == row.get("department_name"), "avg_marks_pct"
     ].mean() if "department_name" in student_summary.columns else np.nan
 
-    status = "On Track" if not row["at_risk"] else "Needs Attention"
-    status_color = "green" if not row["at_risk"] else "orange"
+    if row["incomplete"]:
+        status, status_color = "Incomplete data", "gray"
+    else:
+        status = "On Track" if not row["at_risk"] else "Needs Attention"
+        status_color = "green" if not row["at_risk"] else "orange"
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Average Marks", f"{row['avg_marks_pct']:.1f}%",
@@ -232,9 +237,9 @@ def render_teacher_view(teacher_summary: pd.DataFrame):
 
     st.markdown(f"> {rating_phrase(row['avg_rating'])}")
 
-    st.subheader("Context (department average, for reference — not a ranking)")
+    st.subheader("Context (average across all teachers, for reference — not a ranking)")
     compare_df = pd.DataFrame({
-        "Metric": ["Feedback Rating", "Feedback Rating (dept. avg)"],
+        "Metric": ["Feedback Rating", "Feedback Rating (all-teacher avg)"],
         "Value": [row["avg_rating"], dept_avg_rating],
     }).dropna()
     if not compare_df.empty:

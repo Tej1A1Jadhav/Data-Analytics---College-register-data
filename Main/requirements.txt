@@ -4,3 +4,5 @@ matplotlib
 sqlalchemy
 pymysql
 python-dotenv
+streamlit
+jupyter

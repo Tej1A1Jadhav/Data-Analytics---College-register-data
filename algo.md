@@ -1,53 +1,27 @@
 Algorithm: Student & Teacher Performance Analytics
 
-Step 1: Start
-    Import required libraries (pandas, mysql.connector, plotly.express, streamlit).
+Step 1: Start. Import the required libraries (pandas, SQLAlchemy, python-dotenv, matplotlib, Streamlit).
 
-Step 2: Connect to Database
-    Establish connection with MySQL using host, user, password, and database.
+Step 2: Configure. Read the database host, user, password and name from the .env file.
 
-Step 3: Load Data
-    Execute SQL queries to fetch tables:
-        - students
-        - teachers
-        - subjects
-        - marks
-        - attendance
-        - feedback
-    Store each table in a pandas DataFrame.
+Step 3: Connect. Create a MySQL engine using SQLAlchemy (PyMySQL driver) and test the connection.
 
-Step 4: Clean Data
-    - Remove missing values using dropna().
-    - Remove duplicates using drop_duplicates().
-    - Convert data types using pd.to_numeric().
-    - Standardize text using str.strip() and str.capitalize().
+Step 4: Load data. Read the 7 database tables (students, teachers, subjects, marks, attendance, feedback, etc.) into pandas DataFrames.
 
-Step 5: Analyze Data
-    - Compute average marks per student.
-    - Compute average marks per subject.
-    - Calculate pass percentage.
-    - Summarize attendance (count of “Present” per student).
-    - Calculate average teacher ratings.
+Step 5: Clean data. Remove duplicate rows using drop_duplicates(), convert numeric columns using pd.to_numeric(), and standardise text columns using str.strip() and str.capitalize().
 
-Step 6: Merge and Aggregate
-    - Merge attendance and marks for correlation analysis.
-    - Merge teacher ratings with subjects for performance overview.
+Step 6: Compute metrics.
+- Marks % = marks obtained / total marks x 100, then the average marks % per student and per subject.
+- Attendance % = sessions present / total sessions x 100 per student.
+- Pass percentage = share of marks records at or above the 40% pass mark.
+- Average teacher rating from the feedback table.
 
-Step 7: Visualize Data
-    - Create histogram for marks distribution.
-    - Create bar chart for average marks per subject.
-    - Create line chart for marks and attendance trends.
-    - Create scatter plot for attendance vs marks.
-    - Create pie chart for pass vs fail ratio.
-    - Create heatmap for subject vs teacher performance.
+Step 7: Merge and aggregate. Join marks and attendance per student, join marks with subjects and teachers, and join feedback with teachers.
 
-Step 8: Display Dashboard
-    - Use Streamlit to show student and teacher lists.
-    - Display pandas tables and Plotly charts.
-    - Allow user interaction with filters and selections.
+Step 8: Flag risk. A student is marked "At risk" if average marks are below 40% or attendance is below 75%. Students with missing marks or attendance are labelled "Incomplete data".
 
-Step 9: Export Data (Optional)
-    - Save cleaned or analyzed data to CSV or Excel files.
+Step 9: Visualise. Draw the attendance vs marks hexbin chart with 40% and 75% reference lines, and produce subject-wise and teacher-wise summaries.
 
-Step 10: End
-    Close database connection and terminate the program.
+Step 10: Display dashboard. Use Streamlit to switch between the Student Report and Teacher Insights views, search for a student or teacher, and show metric tiles and comparison charts.
+
+Step 11: End. Close the database connection and terminate the program.
